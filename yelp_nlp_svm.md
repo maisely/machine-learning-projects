@@ -396,6 +396,11 @@ We also created two wordclouds that represent the most positive and negative phr
 
 ![](./img/dc_wordcloud.png)
 
+We can see here that the terms that are most positive include ‘friendly staff’, ‘delicious’, ‘great customer service’, ‘great food’. This indicates that the important features for customer’s satisfaction is staff, food taste, and service.
+
+The terms that are most negative include ‘minutes’, ‘over priced’, ‘bland’, ‘food was ok’, ‘nothing special’. This suggests that negative reviews are driven by long wait times, overpriced food, bad food taste, an experience that isn’t deemed as anything special.
+
+
 ```python
 vocabulary_ngram = cvModel.vocabulary
 weights_ngram = svm.weights.toArray()
