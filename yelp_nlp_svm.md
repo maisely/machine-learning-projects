@@ -1,7 +1,7 @@
 # **Yelp Review Sentiment Analysis using Distributed Computing**
 
 
-*The project was completed with the group of Nicha Ruchirawat, Tina GongTing Peng and Maise Ly*
+*The project was contributed by Nicha Ruchirawat, Maise Ly and GongTing Peng*
 
 ## Problem Statement
 Classifiy Yelp reviews as positive / negative and identify most relevant phrases based on the textual content using bags of words, tf-idf, SVM and Regularized Logistic Regression.
@@ -347,7 +347,7 @@ ngram_df.filter(ngram_df['text'].contains('i_will_never')).select('text').limit(
 [Row(text=u'josephine is very unprofessional  she had no customer service  josephine i did not choose your job  you did  if your not happy at your job change it  you cannot yell at customers and expect them to come back  i have been a loyal customer from the day you opened  i_will_never go back ')]
 ```
 
-The same pipeline is implemented on the new training data. We could see that the F1 score has improved from **87.32%** to **87.97%**. 
+The same pipeline is implemented on the new training data. We could see that the F1 score has improved from **87.32%** to **87.97%**.
 
 ```python
 # tokenize and remove stop words with ngram
