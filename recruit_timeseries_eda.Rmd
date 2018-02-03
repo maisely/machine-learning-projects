@@ -306,7 +306,8 @@ leaflet(jspdf) %>%
             opacity = 0.7, title ="Average Visitors per Store", position = "bottomright")
 ```
 
-\  
+
+![](./img/recruit_map.png)
 
 In the data, we're given the three components of a restaurant's address, so let's split them out so we could see a high-level summary of the store locations. Unsurprisingly, Tokyo has the most stores across the country, but on average, it has one of the lowest number of visitors per store.  
 
@@ -347,7 +348,7 @@ grid.arrange(p1,p2,ncol=2)
 ```
 
 
-![](./img/recruit_map.png)
+![](./img/recruit_storecount.png)
 
 
 ## First Look at the Time Series
