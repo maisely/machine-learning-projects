@@ -11,7 +11,7 @@ The model will be implemented on a YARN cluster of four nodes (three workers and
 
 ![](./img/dc_pipeline.png)
 
-The original dataset is obtained via the [Yelp Data Challenge](https://www.yelp.com/dataset/challenge), from which we only used the review json file of 3.82GB. The data is stored in an Amazon S3 bucket before it was imported to the mongoDB on the EC2 instance.   
+The original dataset was obtained via the [Yelp Data Challenge](https://www.yelp.com/dataset/challenge), from which we only used the review json file of 3.82GB. The data had been stored in an Amazon S3 bucket before it was imported to the mongoDB on the EC2 instance.   
 
 ![](./img/dc_mongo.png)
 
@@ -19,7 +19,7 @@ The data was then loaded into Spark and the model was implemented using Spark ML
 
 ## Build a Model
 
-We loaded the data into Spark via the use of Spark-Mongo-Connector packages. Noted that, we have replaced our master public IP with the local host. The schema of the review collection is very simple, we will only need two features: the text and stars. Further actions will need to incorporate other variables that help to measure the "interestingness" to users such as `useful`, or `cool`. However, this project focuses solely on the NLP aspect of the data.
+We loaded the data into Spark via the use of Spark-Mongo-Connector packages. Noted that, we have replaced our master public IP with the local host. The schema of the review collection is very simple, we only needed two features: the text and stars. Further actions will need to incorporate other variables that help to measure the "interestingness" to users such as `useful`, or `cool`. However, this project focuses solely on the NLP aspect of the data.
 
 ```python
 # load review raw data
@@ -44,7 +44,7 @@ root
  |-- user_id: string (nullable = true)
 ```
 
-Using SparkSQL, basic data exploratory data analysis could be done. The majority of the reviews focuses on the positive sides -- intuitively, people tend to leave reviews when they feel great about their experience. Contradictory, the number of extremely negative reviews (1 star) also overwhelm the number of neutral reviews (2 or 3 stars).
+Using SparkSQL, basic data exploratory data analysis could be done. The majority of the reviews focuses on the positive sides -- intuitively, people tend to leave reviews when they feel great about their experience. Contradictory, the number of extremely negative reviews (1 star) is also greater than the number of neutral reviews (2 or 3 stars).
 
 ```python
 review.groupBy('stars').agg(count('review_id').alias('count')).sort('stars').show()
@@ -63,7 +63,7 @@ review.groupBy('stars').agg(count('review_id').alias('count')).sort('stars').sho
 
 ### Text Pre-processing
 
-The stars are then relabelled so that any reviews with 4 stars or above will be positive, anything else is deemed to be negative. This benchmark is based on a general consensus about Yelp reviews where people tend to overrate restaurants/businesses unless they feel strongly negatively about the place. We also remove punctuations and numbers before tokenizing the text.
+The stars were then relabelled so that any reviews with 4 stars or above would be positive, anything else was deemed to be negative. This benchmark is based on a general consensus about Yelp reviews where people tend to overrate restaurants/businesses unless they feel strongly negatively about the place. We also removed punctuations and numbers before tokenizing the text.
 
 ```python
 # remove punctuation
@@ -107,7 +107,7 @@ only showing top 5 rows
 ```
 ### Tokenize
 
-Tokenizing the approach where we split the entire sentences into words and the order of the words will not hold any importance. Stop words such as prepositions or articles ("a", "the") are also removed so that we only keep the more meaningful words in the corpus.
+Tokenizing is the approach where we split the entire sentences into words and the order of the words will not hold any importance. Stop words such as prepositions or articles ("a", "the") were also removed so that we only kept the more meaningful words in the corpus.
 
 ```python
 # tokenize
@@ -136,7 +136,7 @@ only showing top 5 rows
 
 ## Unigrams & trigrams - Frequency > 20
 
-We are going attempt two modeling approaches. The first one is to split the model into trigrams (e.g. every three words in a single review will be split together. We will then pick out the trigrams that appear more than 20 times in the corpus, so that we can eliminate any random phrases that only appear once or twice.
+We attempted two modeling approaches. The first one is to split the model into trigrams (e.g. every three words in a single review will be split together. We will then pick out the trigrams that appear more than 20 times in the corpus, so that we can eliminate any random phrases that only appear once or twice.
 
 These phrases, will be then joined together, using an underscore "_", and be replaced in the original text. The pipeline of Tokenize --> CountVectorizer (BagOfWords) --> TF-IDF --> Model will then be applied using the new texts. This step ensures that we have a well-mixed combinations of unigrams and trigrams in our training data.   
 
@@ -191,7 +191,7 @@ tfidfModel = idf.fit(count_vectorized)
 tfidf_df = tfidfModel.transform(count_vectorized)
 ```
 ### Support Vector Machine
-With a train-test split ratio of 80:20 we then run 50 iterations of Support Vector Machine (SVM) model on the training data. The parallel computing of the Spark has surely speed up the entire process. On a local computer, we were only able to process up to 1,000 rows before getting hungry for the next meal while running the same model with millions of rows, it became a matter of minutes.
+With a train-test split ratio of 80:20 we then ran 50 iterations of Support Vector Machine (SVM) model on the training data. The parallel computing of the Spark has surely speed up the entire process. On a local computer, we were only able to process up to 1,000 rows before getting hungry for the next meal, while running the same model with millions of rows, it becomes a matter of minutes.
 
 ```python
 # split into training and testing set
@@ -257,7 +257,7 @@ F1 score: 0.8421
 
 ### SVM with Trigrams Only
 
-The second modeling approach that we tried is: Instead of selecting the trigrams based on their frequencies, we used their coefficients from a SVM model as a benchmark instead. So first, we also split the original texts into trigrams or groups of three words like before.
+The second modeling approach that we tried was that instead of selecting the trigrams based on their frequencies, we used their coefficients from a SVM model as a benchmark instead. So first, we also split the original texts into trigrams or groups of three words like before.
 
 ```python
 # add ngram column
