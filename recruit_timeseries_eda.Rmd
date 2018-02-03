@@ -9,47 +9,6 @@ knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
 ```
 
 
-```{r, include=FALSE}
-library('ggplot2')
-library('scales') 
-library('RColorBrewer') 
-library('plotly')
-library('leaflet')
-library('htmltools')
-library('dendextend')
-
-library('mapdata')
-library('maptools')
-
-library('dplyr') 
-library('data.table') 
-library('tidyr') 
-library('stringr') 
-
-library('ggfortify') 
-library('ggrepel') 
-library('ggridges') 
-library('gridExtra') 
-library("ggdendro")
-
-library('lubridate')
-library('timeDate') 
-library('tseries')
-library('imputeTS')
-# library('TSclust')
-library('forecast') 
-library('prophet') 
-
-theme_set(theme_light()
-          +theme(axis.text=element_text(size=7), 
-                 axis.text.x=element_text(size=7),
-                 axis.text.y=element_text(size=7),
-                 plot.title = element_text(size=9),
-                axis.title=element_text(size=9)))
-
-#rm(list=ls())
-```
-
 ## Introduction
 
 This competition's main focus is to forecast future restaurant visitors on a given date, or in short a Time Series problem. We will make our predictions using the data from two different systems:
