@@ -72,15 +72,6 @@ for (f in files){
 }
 ```
 
-```{r eval=TRUE}
-air_visit_data <- fread('../input/air_visit_data.csv')
-air_reserve <- fread('../input/air_reserve.csv')
-hpg_reserve <- fread('../input/hpg_reserve.csv')
-date_info <- fread('../input/date_info.csv')
-hpg_store_info <- fread('../input/hpg_store_info.csv')
-air_store_info <- fread('../input/air_store_info.csv')
-store_id_relation <- fread('../input/store_id_relation.csv')# add date of week
-```
 
 ## Simple Feature Engineering
 
@@ -94,14 +85,6 @@ air_reserve$reserve_date <- as.Date(air_reserve$reserve_datetime)
 air_reserve$reserve_time <- format(strptime(air_reserve$reserve_datetime,
                                    format="%Y-%m-%d %H:%M:%S"), "%H:%M") 
 
-hpg_reserve$visit_date <- as.Date(hpg_reserve$visit_datetime)
-hpg_reserve$visit_time <- format(strptime(hpg_reserve$visit_datetime,
-                                   format="%Y-%m-%d %H:%M:%S"), "%H:%M")
-
-hpg_reserve$reserve_date <- as.Date(hpg_reserve$reserve_datetime)
-hpg_reserve$reserve_time <- format(strptime(hpg_reserve$reserve_datetime,
-                                   format="%Y-%m-%d %H:%M:%S"), "%H:%M") 
-
 date_info$calendar_date <- as.Date(date_info$calendar_date)
 air_visit_data$visit_date <- as.Date(air_visit_data$visit_date)
 
@@ -110,20 +93,14 @@ air_reserve <- air_reserve %>%
   mutate(visit_dow=wday(visit_date, label=TRUE)) %>% 
   mutate(reserve_dow=wday(reserve_date, label=TRUE))
 
-hpg_reserve <- hpg_reserve %>% 
-  mutate(visit_dow=wday(visit_date, label=TRUE)) %>% 
-  mutate(reserve_dow=wday(reserve_date, label=TRUE))
-
 air_visit_data <- air_visit_data %>% 
   mutate(visit_dow=wday(visit_date, label=TRUE))
 
 # add holiday flags
 air_reserve <- air_reserve %>% left_join(date_info, by=c("visit_date"="calendar_date"))
-hpg_reserve <- hpg_reserve %>% left_join(date_info, by=c("visit_date"="calendar_date"))
 air_visit_data <- air_visit_data %>% left_join(date_info, by=c("visit_date"="calendar_date"))
 
 air_reserve$holiday_flg <- factor(air_reserve$holiday_flg, labels=c("Not Holiday", "Holiday"))
-hpg_reserve$holiday_flg <- factor(hpg_reserve$holiday_flg, labels=c("Not Holiday", "Holiday"))
 air_visit_data$holiday_flg <- factor(air_visit_data$holiday_flg, labels=c("Not Holiday", "Holiday"))
 ```
 
@@ -159,6 +136,7 @@ distinct(hpg_store_id) %>% count()
 
 print(paste("hpg_store_info contains reservation info of", hpg_info, "stores but only",hpg_air_info, "belongs to the AirREGI system", sep=" "))
 ```
+
 
 ### Store Categories 
 
@@ -204,6 +182,8 @@ p2 <- air_store_info %>%
 
 grid.arrange(p1,p2,ncol=2)
 ```
+
+![](./img/recruit_visit.png)
 
 ## Correlation Between Restaurant Categories
 
@@ -367,6 +347,9 @@ grid.arrange(p1,p2,ncol=2)
 ```
 
 
+![](./img/recruit_map.png)
+
+
 ## First Look at the Time Series
 
 Let's first look at the time series for the number of visitors from the AirREGI system. There are some repeated patterns we could see here (frequent spiles that repeated every 5 days) -- which could have been due to the heavy traffic of weekend. In addition, there is a sudden increase in the number of visitors starting around July 1st 2017. Usually such large shift in data values is due to a systematic change. It could be because of AirREGI internal reporting system or maybe, they merged with a large group of restaurants. We are unsure of the cause for such change but it seems like we will have to handle some missing data in this case.
@@ -408,11 +391,12 @@ p <- subplot(p1, p2, nrows = 2, shareX=TRUE)
 ggplotly(p)
 ```
 
-\  
+![](./img/recruit_ts_air.png)
+  
 Such abnormal behavior can also be seen in the number of visitors reserved on AirREGI. The month of August and September was technically "dead" with little to none reservations before it picked up again in November. The volume of reserved visitors post-November is also at much larger order of magnitude versus pre-August 2016. 
 
 In addition, notice that the proportion of reservations to the actual visits is pretty low, between 10-30% on average (excluding the time gap in August).
-\  
+ 
 
 ```{r echo=FALSE, fig.width=12, fig.height=3.5, out.width="100%"}
 p <- air1 %>% left_join(air2) %>% 
@@ -426,6 +410,8 @@ p <- air1 %>% left_join(air2) %>%
 ggplotly(p)
 ```
 
+
+![](./img/recruit_ts_ratio.png)
 
 Below is the HPG reserve pattern. Herein, the traffic for August and September is not much different and excluding the Christmas-NYE spikes, there is no significant shift like the one we have seen in AirREGI. It could be deduced now that it's an internal factor that caused such change in pattern AirREGI's number of visitors rather than an exogenous / external factor. 
 
@@ -456,6 +442,8 @@ p <- hpg_reserve %>%
 ggplotly(p)
 ```
 
+![](./img/recruit_ts_hpg.png)
+
 ## Air Visitors Time Series Decomposition
 
 Any time series data could be decomposed into at least one of the following components: 
@@ -482,6 +470,8 @@ p4 <- decompose(daily_visit) %>% .$random %>%
 
 grid.arrange(p2,p3,p4,ncol=3)
 ```
+
+![](./img/recruit_decomposition.png)
 
 The key idea of a time series forecast tend to focus the concept of a "stationary" time series. A stationary time series is when the relationship between observations at different time points are not dependent on a specific time, and they will distribute evenly around a constant mean. Many time series may initially seem to be non-stationary, but can be mathematical transformed into a stationary version. 
 
@@ -514,6 +504,8 @@ p2 <- air_reserve %>% group_by(reserve_time, visit_dow) %>%
 subplot(p1,p2, margin = 0.05)
 ```
 
+![](./img/recruit_bytime.png)
+
 #### Or does it follow a monthly trend? 
 
 As we could see in the plot below, March and December, which are greatly contributed to the number of holidays within these two months, i.e. the cherry blossom and Christmas-NYE season in Japan. In addition, August in September has a sudden drop as we have observed in the above plot. Given the different level in number of reservations by month, we could suspect that the time series is also driven by a seasonal component. 
@@ -534,6 +526,8 @@ p <- air_visit_data %>%
 ggplotly(p)
 #grid.arrange(p1, p2, ncol=2)
 ```
+
+![](./img/recruit_bymonth.png)
 
 In order to understand how variables at different time steps are related, we often use the ACF (**Autocorrelation Function**) and PACF (**Partial Autocorrelation Function**) plots. Contradictory to what we suspected above, the time series have ingsignificant, if not, non-existent seasonal component based on the ACF plot of a de-trended series below. That being said, the series after the transformation can be defined as "stationary" - i.e. its mean and variance does not vary across time. In the second ACF plot, the only significant spike is at lag 1, meaning that only the pair of the error terms that are one lag different has strong autocorrelation.
  
@@ -565,4 +559,4 @@ p4 <- acf(d.air_visit_ts, plot=FALSE, lag.max=72) %>%
 grid.arrange(p1, p2, p3, p4, ncol=2)
 ```
 
----- That's it for today. I will have to go and study for all the math proofs in prepartion for my exam on Friday ----
+![](./img/recruit_acf.png)
