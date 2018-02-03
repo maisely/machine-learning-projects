@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
 
 ## Introduction
 
-This competition's main focus is to forecast future restaurant visitors on a given date, or in short a Time Series problem. We will make our predictions using the data from two different systems:
+This analysis is for the [Recruit Restaurant Visitor Forecasting](https://www.kaggle.com/c/recruit-restaurant-visitor-forecasting) competition, which main focus is to predict future restaurant visitors on a given date, or in short a Time Series problem. We will make our predictions using the data from two different systems:
 
 + AirREGI: A reservation control and cash register system
 + Hot Pepper Gourmet: A Yelp-equivalent wesbite where users can look up for restaurants and reserve online.
