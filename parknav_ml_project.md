@@ -109,6 +109,7 @@ Based on the model performance below, Random Forest gives us the highest F0.5 sc
 The Logistic Regression performance are negatively affected by the high correlation between the engineered features such as the average number of available spots by street and by the location cluster (`spots_gby_Street` `spots_gby_from_cluster`).
 
 Table 3: Models’ F0.5, Precision and Recall Scores
+
 | | Random Forest | Logistic Reg. | xgBoost | LightGBM |
 |-|:-------------:|:-------------:|:-------:|:---------:|
 F0.5 | 0.592992 | 0.54847 | 0.579151 | 0.659091 |
