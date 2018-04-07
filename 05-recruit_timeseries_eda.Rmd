@@ -103,77 +103,7 @@ The two dataset also have restaurant genres albeit they are categorized differen
 
 However, while cafe/sweets hold the second place in Air, it only has a few number of visitors based on the category of HPG. This suggests the categories of the two systems may not be in sync as we hope they would be. 
 
-```{r fig.width=15, fig.height=7, echo=FALSE}
-p1 <- air_store_info %>% 
-  left_join(air_visit_data, c("air_store_id")) %>%
-  dplyr::group_by(air_genre_name) %>% 
-  dplyr::summarize(act_visitor_tol = sum(visitors)) %>%
-  ggplot() +
-  geom_bar(aes(x=reorder(air_genre_name,act_visitor_tol),
-                         y=act_visitor_tol), stat='identity', fill='#1A5887') +
-  labs(x="air_genre", title="Vistors by Air Restaurant Genre") +
-  guides(fill=FALSE) +
-  coord_flip() +
-  theme(axis.text=element_text(size=14), 
-                 axis.text.x=element_text(size=14),
-                 axis.text.y=element_text(size=14),
-                 plot.title = element_text(size=20),
-                axis.title=element_text(size=17))
-  
-p2 <- air_store_info %>% 
-  left_join(air_visit_data, c("air_store_id")) %>%
-  left_join(store_id_relation, c("air_store_id")) %>% 
-  left_join(hpg_store_info, c("hpg_store_id")) %>% 
-  dplyr::group_by(hpg_genre_name) %>% 
-  dplyr::summarize(act_visitor_tol = sum(visitors)) %>%
-  na.omit() %>% 
-  ggplot() +
-  geom_bar(aes(x=reorder(hpg_genre_name, act_visitor_tol),
-                         y=act_visitor_tol), stat='identity',fill="#C70509") +
-  labs(x="hpg_genre", title="Vistors by HPG Restaurant Genre") +
-  guides(fill=FALSE) +
-  coord_flip()  +
-  theme(axis.text=element_text(size=14), 
-                 axis.text.x=element_text(size=14),
-                 axis.text.y=element_text(size=14),
-                 plot.title = element_text(size=20),
-                axis.title=element_text(size=17)) 
-
-grid.arrange(p1,p2,ncol=2)
-```
-
 ![](./img/recruit_visit.png)
-
-## Correlation Between Restaurant Categories
-
-```{r eval=FALSE, fig.width=10, fig.height=5, out.width="100%"}
-df1 <- air_store_info %>% 
-  left_join(air_visit_data, c("air_store_id")) %>% 
-  dplyr::group_by(air_genre_name, visit_date) %>% 
-  dplyr::summarize(act_visitor_tol = sum(visitors)) %>% 
-  dcast(visit_date ~ air_genre_name) %>% 
-  select(-c(Asian)) %>% # more than half are NA entries
-  select(-contains("Karaoke/Party")) %>% # more than half are NA entries
-  select(-contains("International cuisine")) # more than half are NA entries
-
-# impute missing values
-df1 <- na.seadec(df1, algorithm="interpolation")
-tsdist <- t(select(df1, -1)) %>% scale() %>% diss("ACF", p=0.05)
-hc <- hclust(tsdist)
-
-dend <- as.dendrogram(hc)
-dend <- dend %>%
-  dendextend::set("branches_k_color", k=4) %>% 
-  dendextend::set("branches_lwd", 1.0) %>%
-  dendextend::set("labels_cex", 1.2) %>% 
-  dendextend::set("leaves_pch", 19) %>%  
-  dendextend::set("leaves_col", c("black")) %>%
-  dendextend::set("leaves_cex", 0.6) %>% 
-  highlight_branches_col
-
-par(cex=0.4)
-ggplot(dend, horiz=TRUE) 
-```
 
 
 ### Store Locations
@@ -269,42 +199,6 @@ leaflet(jspdf) %>%
 ![](./img/recruit_map.png)
 
 In the data, we're given the three components of a restaurant's address, so let's split them out so we could see a high-level summary of the store locations. Unsurprisingly, Tokyo has the most stores across the country, but on average, it has one of the lowest number of visitors per store.  
-
-```{r, echo=FALSE, fig.width=15, fig.height=7, out.width="100%"}
-cold_palette <- c('#000000', '#081F39', '#0F3B6C', '#345A78', '#316283', '#4A879C', '#2F8FA8', '#88B2BE', '#C6D4DD', '#CAD6DF', '#EFEFEF')
-
-# plot store count
-p1 <- air_store_summ %>% 
-  ggplot() +
-  geom_bar(aes(x=reorder(prefecture, air_store_count), y=air_store_count, fill=prefecture), stat='identity', position="dodge") +
-  labs(title="Air Store Count by Prefecture", y="store_count" , x="prefecture") +
-  guides(fill=FALSE) +
-  theme(axis.text=element_text(size=14),
-        axis.text.x=element_text(size=14, angle=90, hjust=1),
-        axis.text.y=element_text(size=14),
-        plot.title = element_text(size=20),
-        axis.title=element_text(size=17)) +
-  scale_fill_manual(values=cold_palette)
-
-# plot store visit count
-p2 <- air_store_summ  %>%
-  ggplot() +
-  geom_point(aes(x=reserve_visitor_tol, y=actual_visitor_tol,
-                 color=prefecture, size=actual_visitor_tol)) +
-  labs(title="Vistors by Air Restaurant Genre") +  
-  scale_size_continuous(range = c(3, 10)) +
-  guides(fill=FALSE) +
-  coord_flip() +
-  theme(axis.text=element_text(size=14),
-        axis.text.x=element_text(size=14),
-        axis.text.y=element_text(size=14),
-        plot.title = element_text(size=20),
-        axis.title=element_text(size=17), 
-        legend.title=element_text(size=14), legend.text=element_text(size=14))+
-  scale_color_manual(values=cold_palette)
-  
-grid.arrange(p1,p2,ncol=2)
-```
 
 
 ![](./img/recruit_storecount.png)
@@ -441,29 +335,6 @@ The key idea of a time series forecast tend to focus the concept of a "stationar
 
 On a non-holiday, there are significantly more customers making reservations to eat out at AirREGI on Friday and Saturday. However, the trend does not follow when it's a holiday, when we see a significant drop in the total number of visitors. This is highly likely because there are less holidays that fall on a Saturday. Assuming people will be on time for their reservations, we could also see that most of the reservations are pretty early for dinner time, around 5:00PM-6:00PM, and not around 8-9:30PM (Hopefully everyone can translate the military time in the chart below ;) ) 
 
-```{r, fig.width=12, fig.height=5, out.width="100%"}
-p1 <- air_visit_data %>%
-  group_by(visit_dow, holiday_flg) %>%
-  summarise(visitor_tol = sum(visitors)) %>%
-  ggplot(aes(color=holiday_flg)) +
-  facet_grid(holiday_flg~., scales="free") +
-  geom_line(aes(x=visit_dow, y=visitor_tol), group=1, size=0.3) +
-  geom_point(aes(x=visit_dow, y=visitor_tol), size=1) +
-  scale_color_manual(values=c("#007D00", "#C00000")) +
-  labs(title="Visitors by Day of Week")+
-  guides(color=FALSE)
-
-p2 <- air_reserve %>% group_by(reserve_time, visit_dow) %>%
-  summarise(visitor_tol = sum(reserve_visitors)) %>% 
-  ggplot() + 
-  geom_col(aes(x=reserve_time, y=visitor_tol), fill="#19417D") +
-  labs(title="Visitors by Day of Week & Time Slot")+
-  scale_y_continuous(breaks=seq(0, 65000, by=10000)) +
-  theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.9))
-
-subplot(p1,p2, margin = 0.05)
-```
-
 ![](./img/recruit_bytime.png)
 
 #### Or does it follow a monthly trend? 
@@ -477,8 +348,6 @@ p <- air_visit_data %>%
   summarise(visitor_tol = sum(visitors), n_holidays = sum(as.numeric(holiday_flg))) %>% 
   ggplot() + 
   geom_col(aes(x=visit_month, y=visitor_tol), fill="#8CB4E1") +
-  #geom_line(aes(x=visit_month, y=n_holidays), group=1, size=0.5, color="#19417D") +
-  #geom_point(aes(x=visit_month, y=n_holidays), size=2, color="#19417D") +
   scale_fill_manual(name = "N1", values = c("Number of Reserved Visitors" = "#8CB4E1")) +
   scale_color_manual(name = "N2", values = c("Number of Holidays" = "#19417D")) +
   labs(title="Reserved Visitors by Month")
